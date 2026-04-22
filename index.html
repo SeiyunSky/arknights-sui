@@ -300,7 +300,10 @@ function buildCharPages(){
         </div>
         ${isLast ? `
         <div class="chibi-area" style="flex:1;display:flex;align-items:center;justify-content:space-between;padding:0 8%;gap:4%">
-          <video data-src="${c.chibi||CHIBI_DEFAULT}" loop muted playsinline preload="none" style="height:clamp(80px,22vh,200px);mix-blend-mode:screen;pointer-events:none;flex-shrink:0"></video>
+          <div class="chibi-slot" style="position:relative;height:clamp(80px,22vh,200px);flex-shrink:0">
+            <img class="chibi-poster" src="${medals[i]}" style="height:100%;opacity:.5;filter:drop-shadow(0 0 8px ${c.glow})">
+            <video data-src="${c.chibi||CHIBI_DEFAULT}" loop muted playsinline preload="none" style="position:absolute;inset:0;height:100%;mix-blend-mode:screen;pointer-events:none;display:none"></video>
+          </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right;padding-right:clamp(28px,8vw,44px)">
             <div class="about-line" style="width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)"></div>
             <div class="about-contact" style="color:var(--text-sub);font-size:clamp(10px,2.8vw,13px);line-height:1.9;letter-spacing:1px;text-shadow:0 2px 6px rgba(0,0,0,.8)">作者：沫路 · 扩列请翻页！→</div>
@@ -309,7 +312,10 @@ function buildCharPages(){
         ` : `
         <div class="chibi-area">
           <div class="chibi-bg" style="background-image:url('${bg}')"></div>
-          <video data-src="${c.chibi||CHIBI_DEFAULT}" loop muted playsinline preload="none"></video>
+          <div class="chibi-slot" style="position:relative;height:clamp(80px,22vh,220px)">
+            <img class="chibi-poster" src="${medals[i]}" style="height:100%;opacity:.5;filter:drop-shadow(0 0 8px ${c.glow})">
+            <video data-src="${c.chibi||CHIBI_DEFAULT}" loop muted playsinline preload="none" style="position:absolute;inset:0;height:100%;mix-blend-mode:screen;pointer-events:none;display:none"></video>
+          </div>
         </div>
         `}
         <div class="char-seal">${c.name[0]}</div>
@@ -363,13 +369,27 @@ function initPages(){
 }
 
 function activateVideos(el){
-  // 先等页面内立绘图加载完，再注入 video src（不抢带宽）
-  const imgs = Array.from(el.querySelectorAll('img'));
+  const imgs = Array.from(el.querySelectorAll('img.char-img'));
   const ready = imgs.every(img => img.complete);
   function loadVideos(){
     el.querySelectorAll('video').forEach(v=>{
       if(!v.src && v.dataset.src){v.src=v.dataset.src}
-      v.muted=true;v.play().catch(()=>{});
+      v.muted=true;
+      // mp4 可以播放后：显示 video，隐藏 poster
+      v.oncanplay = function(){
+        v.style.display='';
+        v.play().catch(()=>{});
+        const poster = v.parentElement.querySelector('.chibi-poster');
+        if(poster) poster.style.display='none';
+        v.oncanplay=null;
+      };
+      // 如果已经可以播放
+      if(v.readyState>=3){
+        v.style.display='';
+        v.play().catch(()=>{});
+        const poster = v.parentElement.querySelector('.chibi-poster');
+        if(poster) poster.style.display='none';
+      }
     });
   }
   if(ready){ loadVideos(); } else {
