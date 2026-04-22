@@ -74,14 +74,14 @@
     .char-img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:clamp(10px,3vw,14px);letter-spacing:3px;background:linear-gradient(180deg,#1a1408,#0e0c08)}
     .char-quote-overlay{position:absolute;bottom:12%;left:0;right:0;padding:0 5%;z-index:4;pointer-events:none;opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s}
     .char-quote-overlay.show{opacity:1;transform:translateY(0)}
-    .char-quote-text{font-family:'Ma Shan Zheng',cursive;font-size:clamp(8.8px,2.56vw,12.8px);line-height:2;color:rgba(240,230,200,.92);text-shadow:0 2px 12px rgba(0,0,0,.9),0 0 6px var(--char-glow,rgba(200,168,107,.4));background:rgba(10,8,4,.55);border-left:2px solid var(--char-glow,var(--gold));padding:8px 12px;border-radius:0 4px 4px 0;backdrop-filter:blur(6px);letter-spacing:1px}
+    .char-quote-text{font-family:'Ma Shan Zheng',cursive;font-size:clamp(11.4px,3.3vw,16.6px);line-height:2;color:rgba(240,230,200,.92);text-shadow:0 2px 12px rgba(0,0,0,.9),0 0 6px var(--char-glow,rgba(200,168,107,.4));background:rgba(10,8,4,.55);border-left:2px solid var(--char-glow,var(--gold));padding:8px 12px;border-radius:0 4px 4px 0;backdrop-filter:blur(6px);letter-spacing:1px}
     .char-info{width:100%;padding:2% 6% 1%;display:flex;flex-direction:column;gap:3px;position:relative;flex-shrink:0}
     .char-info::before{content:'';position:absolute;left:3%;top:10%;bottom:10%;width:1px;background:linear-gradient(180deg,var(--char-glow,var(--gold-dim)),transparent);opacity:.5}
     .char-name-row{display:flex;align-items:baseline;gap:8px}
-    .char-name{font-size:clamp(16px,5vw,24px);font-weight:700;color:var(--gold-light);letter-spacing:4px}
-    .char-title{color:var(--text-dim);font-size:clamp(8px,2.5vw,12px);letter-spacing:3px}
+    .char-name{font-size:clamp(21px,6.5vw,31px);font-weight:700;color:var(--gold-light);letter-spacing:4px}
+    .char-title{color:var(--text-dim);font-size:clamp(10px,3.2vw,16px);letter-spacing:3px}
     .char-line{height:1px;width:100%;opacity:.4}
-    .char-desc{color:var(--text-sub);font-size:clamp(10px,2.8vw,13px);line-height:1.6;letter-spacing:1px}
+    .char-desc{color:var(--text-sub);font-size:clamp(13px,3.6vw,17px);line-height:1.6;letter-spacing:1px}
 
     /* 小人区域（底部空间） */
     .chibi-area{flex:1;display:flex;align-items:center;justify-content:center;width:100%;overflow:hidden;position:relative}
@@ -443,7 +443,7 @@ function playPageVoice(){
   }
 }
 
-let musicOn=true;const bgm=document.getElementById('bgm');bgm.volume=.5;
+let musicOn=true;const bgm=document.getElementById('bgm');bgm.volume=.25;
 bgm.play().catch(()=>{document.addEventListener('click',function t(){bgm.play().catch(()=>{})},{once:true})});
 document.getElementById('music-btn').textContent='♫';document.getElementById('music-btn').classList.add('on');
 document.getElementById('music-btn').addEventListener('click',()=>{musicOn=!musicOn;const b=document.getElementById('music-btn');b.textContent=musicOn?'♫':'♪';b.classList.toggle('on',musicOn);if(musicOn)bgm.play().catch(()=>{});else bgm.pause()});
