@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>岁家 · 明日方舟</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <style>
     :root {
       --gold:#c8a86b; --gold-light:#e8d0a0; --gold-dim:#7a6040;
@@ -189,7 +189,7 @@
 
 <script>
 const CDN = 'https://cdn.jsdelivr.net/gh/SeiyunSky/arknights-sui@main/';
-const CHIBI_DEFAULT = CDN+'items/"小自在"-青玉砚-战斗-Idle-x1.webm';
+const CHIBI_DEFAULT = CDN+'items/"小自在"-青玉砚-战斗-Idle-x1.mp4';
 const medals = [
   CDN+'pic4dec/1.png',CDN+'pic4dec/2.png',
   CDN+'pic4dec/medal_rogue_5_03.png',CDN+'pic4dec/medal_rogue_5_04.png',
@@ -207,13 +207,13 @@ const sceneBgs = [
 const characters = [
   {name:'重岳',title:'朔',comment:'大哥天天抓我去习武，啊呀快跑！',desc:'',
    quotes:['让你来担任我的"录武官"？罗德岛的待客之道，真是令人动容，难怪我那几个妹妹会喜欢这里……唔，误会？那，换我做你的副将也无妨。','"博士"，这个称呼让我想起打过交道的大炎学士，体察万千，见微知著。你我似是故人？那场混沌梦醒后，我确实去过许多地方……知交越多，越是寥落，可能在这点上，我们有些相似吧。','如你所见，我时常记下来的，只是一些体悟，而非具体的武功招式。武道在"意"，受限于那些花哨的形式便再难突破。好比看不出夕画里的意境，非抓着她讨论笔力技法，免不了要吃闭门羹。','我答应了给年的电影当"动作指导"，省得她太过闹腾，也省得她寂寞。夕胆小，令贪杯，我也会看着些……我们几个，虽然不比平常人家，但终究也是兄弟姐妹，而非所谓的"我们"。','见死难，是征夫武人的日常。见死难仍动心忍性，不泯道义，而不是搪塞一句"世道如此"，才是他们的功课。世道千万年来都如此，只有那些庞大又傲慢的家伙，才会那样冷漠。'],
-   glow:'rgba(180,140,80,0.5)',voices:[CDN+'mp3/1-1.mp3',CDN+'mp3/1-2.mp3',CDN+'mp3/1-3.mp3',CDN+'mp3/1-4.mp3',CDN+'mp3/1-5.mp3'],image:CDN+'pic/1.jpg',chibi:CDN+'items/重岳-默认-正面-Skill_3-x1.webm',showQuote:true},
+   glow:'rgba(180,140,80,0.5)',voices:[CDN+'mp3/1-1.mp3',CDN+'mp3/1-2.mp3',CDN+'mp3/1-3.mp3',CDN+'mp3/1-4.mp3',CDN+'mp3/1-5.mp3'],image:CDN+'pic/1.jpg',chibi:CDN+'items/重岳-默认-正面-Skill_3-x1.mp4',showQuote:true},
   {name:'望',title:'',comment:'再让我五个子我肯定能下过望哥',desc:'',
    quotes:['博士，这盘棋还没下完，你要来试试手吗？放心，我不会让你输得太难看。','岁兽碎片？呵，那是过去的事了。现在的我，只是一名棋手。棋盘上的胜负，比那些打打杀杀有意思得多。','令姐总说我太较真，可下棋不较真，还有什么意思？人生如棋，落子无悔，这才是规矩。','你问我和大哥谁厉害？他是武，我是文，不好比。不过要是真打起来，我估计撑不过三招——这话你可别告诉他。','千年棋局，终有一散。但在这罗德岛上，我倒是找到了几个能对弈的对手。博士，你算一个。'],
-   glow:'rgba(160,200,220,0.45)',voices:[CDN+'mp3/2-1.mp3',CDN+'mp3/2-2.mp3',CDN+'mp3/2-3.mp3',CDN+'mp3/2-4.mp3',CDN+'mp3/2-5.mp3'],image:CDN+'pic/2.jpg',chibi:CDN+'items/望-默认-正面-Idle_2-x1.webm',showQuote:true},
+   glow:'rgba(160,200,220,0.45)',voices:[CDN+'mp3/2-1.mp3',CDN+'mp3/2-2.mp3',CDN+'mp3/2-3.mp3',CDN+'mp3/2-4.mp3',CDN+'mp3/2-5.mp3'],image:CDN+'pic/2.jpg',chibi:CDN+'items/望-默认-正面-Idle_2-x1.mp4',showQuote:true},
   {name:'令',title:'',comment:'多吃两口才好写诗嘛，等等等，我还不能喝酒！',desc:'',
    quotes:['真让人怀念，很多年前，我也曾如今天这般走入那谋臣似雨的阁楼。','没错，大炎学士口中的"岁"，既是"我们"，也是"祂"。这倒没什么好藏掖的，我也不担心年所担心的。毕竟我只是我，死了也只是死了，只可惜了这杯中物和这天地，我终究是喜欢的。','本以为总算能遇见一位故人，说不定，还是故知，不曾想，你却是如今这般模样。不知我是我，与大梦何异？不过博士，就当你自己也无妨，我与我周旋久，宁做我。','在心为志，发言为诗，若满腔胸臆，气象万千，不写出来岂不是愧对自己？嗯？尾巴？呵呵，笔自然也是用的，但毕竟是外物，不方便嘛，我身既是逍遥身，谁说用尾巴就不行？','现在想来，莱茵的建立就像是昨天发生的事，那时我们争吵的内容和现在也完全不同。哼哼，真令人怀念。你还记得罗德岛刚刚成立的时候吗，博士？记不得？没事的，时间一长，你总会想起来的。'],
-   glow:'rgba(200,168,107,0.5)',voices:[CDN+'mp3/3-1.mp3',CDN+'mp3/3-2.mp3',CDN+'mp3/3-3.mp3',CDN+'mp3/3-4.mp3',CDN+'mp3/3-5.mp3'],image:CDN+'pic/3.jpg',chibi:CDN+'items/令-默认-正面-Skill_02-x1.webm',showQuote:true},
+   glow:'rgba(200,168,107,0.5)',voices:[CDN+'mp3/3-1.mp3',CDN+'mp3/3-2.mp3',CDN+'mp3/3-3.mp3',CDN+'mp3/3-4.mp3',CDN+'mp3/3-5.mp3'],image:CDN+'pic/3.jpg',chibi:CDN+'items/令-默认-正面-Skill_02-x1.mp4',showQuote:true},
   {name:'均',title:'',comment:'四姐看起来太高冷了，生人勿近！',desc:'',
    quotes:['博士，凡事讲究一个度，过犹不及。你今天……似乎已经够了。'],
    glow:'rgba(140,180,140,0.45)',voices:[],image:CDN+'pic/4.jpg',chibi:'',showQuote:true},
@@ -222,7 +222,7 @@ const characters = [
    glow:'rgba(200,120,100,0.45)',voices:[],image:CDN+'pic/5.jpg',chibi:'',showQuote:true},
   {name:'黍',title:'',comment:'黍姐姐种的蔬菜做起来又新鲜又好吃',desc:'',
    quotes:['博士，你脸色不太好，是没休息好吗？先把这碗汤喝了，工作的事不急，我陪你一起处理。','大荒城的风沙虽大，但那里的土地其实很肥沃，只要肯花心思，总能种出点东西。罗德岛的环境……嗯，我得想想办法，给大家弄个小菜园。','年那丫头，又跑来跟你抱怨我唠叨了吧？她从小就这样，一身的反骨，可每次生病了，还不是第一个跑来喊"黍姐"。唉，这群弟弟妹妹，没一个让我省心的。','博士，你见过真正的"岁相"吗？不是我们这些碎片，而是……更庞大、更令人窒息的存在。算了，不说这个了，来，尝尝我刚做的点心。','守护的意义，不在于筑起多高的墙，而在于让生命有扎根生长的机会。博士，我相信罗德岛追求的，也是这样的未来。'],
-   glow:'rgba(200,168,107,0.5)',voices:[CDN+'mp3/6-1.mp3',CDN+'mp3/6-2.mp3',CDN+'mp3/6-3.mp3',CDN+'mp3/6-4.mp3',CDN+'mp3/6-5.mp3'],image:CDN+'pic/6.jpg',chibi:CDN+'items/黍-春日宴-正面-Idle-x1.webm',showQuote:true},
+   glow:'rgba(200,168,107,0.5)',voices:[CDN+'mp3/6-1.mp3',CDN+'mp3/6-2.mp3',CDN+'mp3/6-3.mp3',CDN+'mp3/6-4.mp3',CDN+'mp3/6-5.mp3'],image:CDN+'pic/6.jpg',chibi:CDN+'items/黍-春日宴-正面-Idle-x1.mp4',showQuote:true},
   {name:'绩',title:'',comment:'好久才能见到一次的七哥，外面的世界，真想去看看啊',desc:'',
    quotes:['行路万里，不过是为了有朝一日能回头望望。'],
    glow:'rgba(160,140,200,0.45)',voices:[],image:CDN+'pic/7.jpg',chibi:'',showQuote:true},
@@ -231,16 +231,16 @@ const characters = [
    glow:'rgba(100,180,200,0.45)',voices:[],image:CDN+'pic/8.jpg',chibi:'',showQuote:true},
   {name:'年',title:'',comment:'大家要是能多关照一点年姐，该多好',desc:'',
    quotes:['工作？放着放着，先陪我打两圈！你看这牌都码好了，三缺一，就等你了！','你说我整天游手好闲？话不能这么说，我这不是在搞艺术嘛。冶金也是艺术，拍电影也是艺术，打架也是艺术——虽然最后这个好像不太对。','罗德岛这地方挺有意思的，什么人都有。不过我最感兴趣的还是你，博士。你身上有种……说不清道不明的味道，像是埋了很久的老酒。','别用那种眼神看我，我知道你在想什么。"岁"的碎片？呵，那是他们的事。我是年，我只想过得开心点，顺便看看这出戏能演到什么地步。','我那几个弟弟妹妹？一个比一个不让人省心。要么闷着头搞些看不懂的玩意儿，要么就咋咋呼呼的。不过……这样也挺好，总比死气沉沉强。'],
-   glow:'rgba(200,168,107,0.5)',voices:[CDN+'mp3/9-1.mp3',CDN+'mp3/9-2.mp3',CDN+'mp3/9-3.mp3',CDN+'mp3/9-4.mp3',CDN+'mp3/9-5.mp3'],image:CDN+'pic/9.jpg',chibi:CDN+'items/年-默认-正面-Skill_1_Loop-x1.webm',showQuote:true},
+   glow:'rgba(200,168,107,0.5)',voices:[CDN+'mp3/9-1.mp3',CDN+'mp3/9-2.mp3',CDN+'mp3/9-3.mp3',CDN+'mp3/9-4.mp3',CDN+'mp3/9-5.mp3'],image:CDN+'pic/9.jpg',chibi:CDN+'items/年-默认-正面-Skill_1_Loop-x1.mp4',showQuote:true},
   {name:'老十',title:'',comment:'',desc:'',
    quotes:[],
    glow:'rgba(0,255,0,0.3)',voices:[],image:'',chibi:'',showQuote:false,glitch:true},
   {name:'夕',title:'',comment:'天天就知道泡在画室里的发霉宝宝，唉唉唉什么时候在听的？！',desc:'',
    quotes:['嗯？不是说过，你敲门之后我要是不答应，你就不准进来吗？你的办公室？值班？那我不也是因为值班才出自己房间的吗？册起册起册起，我还在构思哪。','你想看画？可以。如果是你的话，送你张画也可以。但你要是喜欢这画，我就不会送你。你不喜欢？那更不用给你了。','我被困在这艘船上了。要是有人问起来你就和他们这么说，这屋子也别让他们进来。拒绝履行干员义务？你好，我是被困在这个房间里的大画家，夕。','不出去。别喊我出去了，弗想出去。山川风月，花羽林渊，贩夫走卒，老少男女，画不尽，也看不完，越不过，也走不出。我兴致尽了。','画里的东西跑出来了？关我什么事。又不是我让它们出来的……好吧，如果它们吵到你了，我再去画一张把它们关回去。'],
-   glow:'rgba(220,140,80,0.5)',voices:[CDN+'mp3/11-1.mp3',CDN+'mp3/11-2.mp3',CDN+'mp3/11-3.mp3',CDN+'mp3/11-4.mp3',CDN+'mp3/11-5.mp3'],image:CDN+'pic/11.jpg',chibi:CDN+'items/夕-默认-正面-Skill3_Attack-x1.webm',showQuote:true},
+   glow:'rgba(220,140,80,0.5)',voices:[CDN+'mp3/11-1.mp3',CDN+'mp3/11-2.mp3',CDN+'mp3/11-3.mp3',CDN+'mp3/11-4.mp3',CDN+'mp3/11-5.mp3'],image:CDN+'pic/11.jpg',chibi:CDN+'items/夕-默认-正面-Skill3_Attack-x1.mp4',showQuote:true},
   {name:'余',title:'',comment:'做饭天下第一香~！沫路#1143',desc:'',
    quotes:['这位置不孬嘛，那我就……"每日甜点，新鲜出炉，限量供应"，好嘞！博士？没事没事，你忙你的。','博士，不管年姐和你说了什么，我都要再强调一遍，我可不是随随便便就会下厨的。欸，你午饭就用这包零食打发了？唉，我去给你做两个菜去，马上就好。','要说厨艺，我当然还是有信心的。可有人爱山珍野味，就有人爱清粥小菜。众口难调，也要看厨师和食客的缘分。这道菜还合胃口吗？如果下次还想开小灶的话，现在就只能点头哦。','我来罗德岛躲债？谁说的？！我是欠了绩一点房租，但他也没少吃我的呀！唉，我的这些哥哥姐姐，只有馋了饿了的时候才会念着我的好。博士，现在你知道谁才是这个家里最靠谱的人了？','"君子远庖厨"，也不知道是哪个酸书生编出来的歪理。世上那么多事，你不去瞧，它就没有了？人吃五谷杂粮，生七情六欲，再寻常不过。这厨房里的事，明明就是世上最大的事。'],
-   glow:'rgba(200,168,107,0.5)',voices:[CDN+'mp3/12-1.mp3',CDN+'mp3/12-2.mp3',CDN+'mp3/12-3.mp3',CDN+'mp3/12-4.mp3',CDN+'mp3/12-5.mp3'],image:CDN+'pic/12.jpg',chibi:CDN+'items/余-默认-正面-Skill_2-x1.webm',showQuote:true},
+   glow:'rgba(200,168,107,0.5)',voices:[CDN+'mp3/12-1.mp3',CDN+'mp3/12-2.mp3',CDN+'mp3/12-3.mp3',CDN+'mp3/12-4.mp3',CDN+'mp3/12-5.mp3'],image:CDN+'pic/12.jpg',chibi:CDN+'items/余-默认-正面-Skill_2-x1.mp4',showQuote:true},
 ];
 
 let pages=[], currentIdx=0, isAnimating=false;
@@ -363,11 +363,33 @@ function initPages(){
 }
 
 function activateVideos(el){
-  el.querySelectorAll('video').forEach(v=>{
-    if(!v.src && v.dataset.src){v.src=v.dataset.src}
-    v.muted=true;v.play().catch(()=>{});
-  });
+  // 先等页面内立绘图加载完，再注入 video src（不抢带宽）
+  const imgs = Array.from(el.querySelectorAll('img'));
+  const ready = imgs.every(img => img.complete);
+  function loadVideos(){
+    el.querySelectorAll('video').forEach(v=>{
+      if(!v.src && v.dataset.src){v.src=v.dataset.src}
+      v.muted=true;v.play().catch(()=>{});
+    });
+  }
+  if(ready){ loadVideos(); } else {
+    Promise.all(imgs.filter(i=>!i.complete).map(i=>new Promise(r=>{i.onload=i.onerror=r}))).then(loadVideos);
+  }
 }
+
+// 预加载下一页的 webm（静默 fetch，不创建 video）
+function preloadNextVideo(idx){
+  const nextCharIdx = idx; // pages[idx+1] 对应 characters[idx]
+  if(nextCharIdx>=0 && nextCharIdx<characters.length){
+    const src = characters[nextCharIdx].chibi || CHIBI_DEFAULT;
+    if(src && !_preloaded[src]){
+      _preloaded[src]=true;
+      const v=document.createElement('video');
+      v.preload='auto'; v.muted=true; v.src=src;
+    }
+  }
+}
+const _preloaded={};
 
 function goToPage(idx){
   if(isAnimating||idx===currentIdx)return;
@@ -386,10 +408,11 @@ function goToPage(idx){
     to.style.zIndex=totalPages+1;to.style.visibility='visible';to.classList.remove('prev','next');to.classList.add('flip-in');
     void to.offsetWidth;to.classList.remove('flip-in');to.classList.add('current');
     from.style.zIndex=totalPages;from.classList.remove('current');from.classList.add('next');
-    to.querySelectorAll('video').forEach(v=>{v.muted=true;v.play().catch(()=>{})});
+    activateVideos(to);
   }
   setTimeout(()=>{from.classList.remove('flip-out','next','current','flip-in');from.classList.add(fwd?'prev':'next');from.style.zIndex='';from.style.visibility='';to.style.zIndex='';currentIdx=idx;isAnimating=false;playPageVoice();
     activateVideos(to);
+    preloadNextVideo(idx);
   },780);
 }
 
