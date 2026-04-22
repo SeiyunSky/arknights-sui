@@ -18,7 +18,7 @@
     body{background:var(--ink);display:flex;justify-content:center;align-items:center;font-family:'Noto Serif SC',serif;user-select:none}
     /* 舞台外背景图 */
     body::before{content:'';position:fixed;inset:0;background:url('pic4dec/封面.jpg') center/cover no-repeat;opacity:.1;pointer-events:none;z-index:0}
-    #particle-canvas{position:fixed;inset:0;pointer-events:none;z-index:0}
+    #particle-canvas{position:fixed;inset:0;pointer-events:none;z-index:2}
 
     /* ── 舞台：保持9:16比例居中 ── */
     #book-stage{
@@ -46,8 +46,11 @@
     .cover-inner{display:flex;flex-direction:column;align-items:center;gap:clamp(10px,2.5vh,20px);padding:clamp(20px,5vh,60px) 10% ;width:100%;position:relative;z-index:1}
     .cover-seal-top{width:clamp(32px,8vw,48px);height:clamp(32px,8vw,48px);border-radius:2px;background:var(--red-seal);display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(192,57,43,.5)}
     .cover-seal-top::before{content:'岁';font-size:clamp(16px,5vw,24px);font-weight:700;color:#f0e8d8;line-height:1}
-    .cover-logo-area{width:clamp(120px,40vw,220px);height:clamp(120px,40vw,220px);display:flex;align-items:center;justify-content:center}
-    .cover-logo-area img{width:100%;height:100%;object-fit:contain}
+    .cover-logo-area{width:clamp(120px,40vw,220px);height:clamp(120px,40vw,220px);display:flex;align-items:center;justify-content:center;position:relative}
+    .cover-logo-area img{width:100%;height:100%;object-fit:contain;animation:logoFloat 4s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(200,168,107,.4))}
+    .cover-logo-area::before{content:'';position:absolute;inset:-8%;border-radius:50%;background:radial-gradient(ellipse,rgba(200,168,107,.12) 0%,transparent 70%);animation:logoAura 4s ease-in-out infinite}
+    @keyframes logoFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.02)}}
+    @keyframes logoAura{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.15)}}
     .cover-title-block{display:flex;gap:clamp(8px,3vw,18px);align-items:center}
     .cover-title-vert{display:flex;flex-direction:column;align-items:center;gap:2px}
     .cover-title-vert span{font-size:clamp(18px,6vw,30px);font-weight:700;color:var(--gold-light);text-shadow:0 0 16px rgba(200,168,107,.6),0 0 32px rgba(200,168,107,.3);line-height:1.2;letter-spacing:2px}
@@ -296,7 +299,7 @@ function buildCharPages(){
         </div>
         ${isLast ? `
         <div class="chibi-area" style="flex:1;display:flex;align-items:center;justify-content:space-between;padding:0 8%;gap:4%">
-          <video src="${c.chibi||CHIBI_DEFAULT}" autoplay loop muted playsinline style="height:clamp(80px,22vh,200px);mix-blend-mode:screen;pointer-events:none;flex-shrink:0"></video>
+          <video src="${c.chibi||CHIBI_DEFAULT}" loop muted playsinline preload="auto" style="height:clamp(80px,22vh,200px);mix-blend-mode:screen;pointer-events:none;flex-shrink:0"></video>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right;padding-right:clamp(28px,8vw,44px)">
             <div class="about-line" style="width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)"></div>
             <div class="about-contact" style="color:var(--text-sub);font-size:clamp(10px,2.8vw,13px);line-height:1.9;letter-spacing:1px;text-shadow:0 2px 6px rgba(0,0,0,.8)">作者：沫路 · 扩列请翻页！→</div>
@@ -305,7 +308,7 @@ function buildCharPages(){
         ` : `
         <div class="chibi-area">
           <div class="chibi-bg" style="background-image:url('${bg}')"></div>
-          <video src="${c.chibi||CHIBI_DEFAULT}" autoplay loop muted playsinline></video>
+          <video src="${c.chibi||CHIBI_DEFAULT}" loop muted playsinline preload="auto"></video>
         </div>
         `}
         <div class="char-seal">${c.name[0]}</div>
@@ -368,11 +371,14 @@ function goToPage(idx){
   document.querySelectorAll('.char-quote-overlay').forEach(el=>el.classList.remove('show'));
   if(fwd){
     from.style.zIndex=totalPages+1;from.classList.remove('current');from.classList.add('flip-out');
-    setTimeout(()=>{to.style.zIndex=totalPages;to.style.visibility='visible';to.classList.remove('prev','next','flip-in');to.classList.add('current')},350);
+    setTimeout(()=>{to.style.zIndex=totalPages;to.style.visibility='visible';to.classList.remove('prev','next','flip-in');to.classList.add('current');
+      to.querySelectorAll('video').forEach(v=>{v.muted=true;v.play().catch(()=>{})});
+    },350);
   }else{
     to.style.zIndex=totalPages+1;to.style.visibility='visible';to.classList.remove('prev','next');to.classList.add('flip-in');
     void to.offsetWidth;to.classList.remove('flip-in');to.classList.add('current');
     from.style.zIndex=totalPages;from.classList.remove('current');from.classList.add('next');
+    to.querySelectorAll('video').forEach(v=>{v.muted=true;v.play().catch(()=>{})});
   }
   setTimeout(()=>{from.classList.remove('flip-out','next','current','flip-in');from.classList.add(fwd?'prev':'next');from.style.zIndex='';from.style.visibility='';to.style.zIndex='';currentIdx=idx;isAnimating=false;playPageVoice();
     to.querySelectorAll('video').forEach(v=>{if(v.paused)v.play().catch(()=>{})});
@@ -435,28 +441,21 @@ document.getElementById('music-btn').textContent='♫';document.getElementById('
 document.getElementById('music-btn').addEventListener('click',()=>{musicOn=!musicOn;const b=document.getElementById('music-btn');b.textContent=musicOn?'♫':'♪';b.classList.toggle('on',musicOn);if(musicOn)bgm.play().catch(()=>{});else bgm.pause()});
 
 (function(){const c=document.getElementById('particle-canvas'),x=c.getContext('2d');let W,H;
-const d=Array.from({length:40},()=>({x:Math.random()*1400,y:Math.random()*900,r:Math.random()*1.5+.3,vx:(Math.random()-.5)*.15,vy:(Math.random()-.5)*.1-.05,a:Math.random()*.15+.02}));
-const l=Array.from({length:8},()=>({x:Math.random()*1400,y:Math.random()*900,h:Math.random()*30+10,vy:-.2-Math.random()*.2,a:Math.random()*.08+.02}));
-function r(){W=c.width=innerWidth;H=c.height=innerHeight}addEventListener('resize',r);r();
-(function draw(){x.clearRect(0,0,W,H);d.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;x.beginPath();x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fillStyle='#c8a86b';x.globalAlpha=p.a;x.fill()});
-l.forEach(p=>{p.y+=p.vy;if(p.y<-50)p.y=H+50;x.beginPath();x.moveTo(p.x,p.y);x.lineTo(p.x,p.y+p.h);x.strokeStyle='#c8a86b';x.globalAlpha=p.a;x.lineWidth=.5;x.stroke()});x.globalAlpha=1;requestAnimationFrame(draw)})()})();
+const d=Array.from({length:110},()=>({x:Math.random()*1400,y:Math.random()*900,r:Math.random()*2.8+.4,vx:(Math.random()-.5)*.5,vy:-Math.random()*.4-.1,a:Math.random()*.3+.07}));
+const l=Array.from({length:22},()=>({x:Math.random()*1400,y:Math.random()*900,h:Math.random()*55+15,vy:-.6-Math.random()*.5,a:Math.random()*.18+.07}));
+function r(){W=c.width=innerWidth;H=c.height=innerHeight;
+  d.forEach(p=>{if(Math.random()<.5){p.x=W*.25+Math.random()*W*.5}});
+}
+addEventListener('resize',r);r();
+(function draw(){x.clearRect(0,0,W,H);d.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0){p.y=H;p.a=Math.random()*.3+.07}if(p.y>H)p.y=0;const fade=Math.max(0,p.y/H);x.beginPath();x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fillStyle='#c8a86b';x.globalAlpha=p.a*fade;x.fill()});
+l.forEach(p=>{p.y+=p.vy;if(p.y<-50){p.y=H+50;p.a=Math.random()*.18+.07}const fade=Math.max(0,p.y/H);x.beginPath();x.moveTo(p.x,p.y);x.lineTo(p.x,p.y+p.h);x.strokeStyle='#c8a86b';x.globalAlpha=p.a*fade;x.lineWidth=.8;x.stroke()});x.globalAlpha=1;requestAnimationFrame(draw)})()})();
 initPages();
-// webm 自动播放：iOS Safari 不支持 webm，直接隐藏；其他设备手动触发 play
-(function(){
-  const supportsWebm = document.createElement('video').canPlayType('video/webm') !== '';
-  document.querySelectorAll('video').forEach(v => {
-    if (!supportsWebm) { v.style.display = 'none'; return; }
-    v.muted = true;
-    v.play().catch(() => {});
+// 翻页时触发当前页 video 播放（在用户手势上下文内）
+document.addEventListener('click', function(){
+  document.querySelectorAll('.book-page.current video').forEach(v => {
+    if (v.paused) v.play().catch(() => {});
   });
-  // 翻页时对新出现的 video 也触发 play
-  document.addEventListener('click', function(){
-    document.querySelectorAll('video').forEach(v => {
-      if (!supportsWebm) return;
-      if (v.paused) v.play().catch(() => {});
-    });
-  });
-})();
+});
 </script>
 </body>
 </html>
