@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>岁家 · 明日方舟</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold:#c8a86b; --gold-light:#e8d0a0; --gold-dim:#7a6040;
+      --ink:#1a1410; --ink-mid:#2a2018; --ink-light:#3a3028;
+      --paper:#f0e8d8; --red-seal:#c0392b;
+      --text-main:#e8d8b8; --text-sub:#a09070; --text-dim:#5a5040;
+      --border:#3a3020; --glow-gold:rgba(200,168,107,0.45);
+    }
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{width:100%;height:100%;overflow:hidden}
+    body{background:var(--ink);display:flex;justify-content:center;align-items:center;font-family:'Noto Serif SC',serif;user-select:none}
+    /* 舞台外背景图 */
+    body::before{content:'';position:fixed;inset:0;background:url('pic4dec/封面.jpg') center/cover no-repeat;opacity:.1;pointer-events:none;z-index:0}
+    #particle-canvas{position:fixed;inset:0;pointer-events:none;z-index:0}
+
+    /* ── 舞台：保持9:16比例居中 ── */
+    #book-stage{
+      width:min(100vw, 56.25vh); /* 9/16 = 0.5625 */
+      height:min(100vh, 177.78vw);
+      position:relative;z-index:1;perspective:1200px;
+    }
+
+    .book-page{position:absolute;inset:0;border-radius:8px;overflow:hidden;
+      transform-origin:left center;transform-style:preserve-3d;backface-visibility:hidden;
+      transition:transform .75s cubic-bezier(.4,0,.2,1),opacity .5s;
+    }
+    .book-page.current{transform:rotateY(0);z-index:3;opacity:1;pointer-events:all}
+    .book-page.flip-out{transform:rotateY(-180deg);z-index:4;opacity:.3;pointer-events:none}
+    .book-page.flip-in{transform:rotateY(180deg);z-index:4;opacity:.3;pointer-events:none}
+    .book-page.next,.book-page.prev{transform:rotateY(0);z-index:1;opacity:1;pointer-events:none;visibility:hidden}
+
+    /* ══ 封面 ══ */
+    #page-cover{background:linear-gradient(160deg,#1e180e,#0e0c08);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden}
+    #page-cover::before{content:'';position:absolute;inset:0;background:url('pic4dec/封面.jpg') center/cover no-repeat;opacity:.2;pointer-events:none;z-index:0}
+    .cover-bg-texture{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(200,168,107,.06) 0%,transparent 60%),radial-gradient(ellipse at 20% 30%,rgba(200,168,107,.04) 0%,transparent 40%);pointer-events:none}
+    .cover-vert-lines{position:absolute;inset:0;pointer-events:none}
+    .cover-vert-lines::before,.cover-vert-lines::after{content:'';position:absolute;top:8%;bottom:8%;width:1px;opacity:.12;background:linear-gradient(180deg,transparent,var(--gold),transparent)}
+    .cover-vert-lines::before{left:7%} .cover-vert-lines::after{right:7%}
+    .cover-inner{display:flex;flex-direction:column;align-items:center;gap:clamp(10px,2.5vh,20px);padding:clamp(20px,5vh,60px) 10% ;width:100%;position:relative;z-index:1}
+    .cover-seal-top{width:clamp(32px,8vw,48px);height:clamp(32px,8vw,48px);border-radius:2px;background:var(--red-seal);display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(192,57,43,.5)}
+    .cover-seal-top::before{content:'岁';font-size:clamp(16px,5vw,24px);font-weight:700;color:#f0e8d8;line-height:1}
+    .cover-logo-area{width:clamp(120px,40vw,220px);height:clamp(120px,40vw,220px);display:flex;align-items:center;justify-content:center}
+    .cover-logo-area img{width:100%;height:100%;object-fit:contain}
+    .cover-title-block{display:flex;gap:clamp(8px,3vw,18px);align-items:center}
+    .cover-title-vert{display:flex;flex-direction:column;align-items:center;gap:2px}
+    .cover-title-vert span{font-size:clamp(18px,6vw,30px);font-weight:700;color:var(--gold-light);text-shadow:0 0 16px rgba(200,168,107,.6),0 0 32px rgba(200,168,107,.3);line-height:1.2;letter-spacing:2px}
+    .cover-title-divider{width:1px;height:clamp(40px,12vw,80px);background:linear-gradient(180deg,transparent,var(--gold-dim),transparent)}
+    .cover-title-sub{writing-mode:vertical-rl;font-size:clamp(9px,2.5vw,12px);color:var(--text-dim);letter-spacing:4px}
+    .cover-bottom-line{width:50%;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);margin-top:4px}
+    .cover-sub-text{font-size:clamp(10px,3vw,14px);color:var(--gold);letter-spacing:4px;margin-top:8px;padding:4px 16px;border:1px solid rgba(200,168,107,.3);border-radius:2px;z-index:2}
+    #page-cover::after{content:'';position:absolute;top:-100%;left:-40%;width:30%;height:300%;background:linear-gradient(100deg,transparent 40%,rgba(200,168,107,.08) 50%,transparent 60%);animation:coverSweep 6s ease-in-out infinite}
+    @keyframes coverSweep{0%{transform:translateX(-100%)}70%,100%{transform:translateX(500%)}}
+    .cover-hint{position:absolute;bottom:clamp(16px,3vh,36px);color:var(--text-dim);font-size:clamp(9px,2.5vw,12px);letter-spacing:4px;animation:blink 2.5s ease-in-out infinite;z-index:1}
+    @keyframes blink{0%,100%{opacity:.3}50%{opacity:.8}}
+
+    /* ══ 角色页 ══ */
+    .char-page{width:100%;height:100%;position:relative;background:linear-gradient(180deg,#141008,#0e0c08);display:flex;flex-direction:column;align-items:center;overflow:hidden}
+    .char-image-wrap{width:100%;height:68%;position:relative;overflow:hidden;flex-shrink:0;cursor:pointer;background:linear-gradient(180deg,#f0e8d8 0%,#f0e8d8 60%,#0e0c08 100%)}
+    .char-image-wrap::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:70%;height:25%;background:radial-gradient(ellipse,var(--char-glow,var(--glow-gold)) 0%,transparent 70%);animation:breathe 3.5s ease-in-out infinite;z-index:2}
+    @keyframes breathe{0%,100%{opacity:.5;transform:translateX(-50%) scaleX(1)}50%{opacity:.9;transform:translateX(-50%) scaleX(1.15)}}
+    .char-image-wrap::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,#0e0c08 95%);pointer-events:none;z-index:2}
+    .char-top-bar{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--char-glow,var(--gold)),transparent);z-index:3}
+    .char-img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block;mix-blend-mode:multiply}
+    .char-img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:clamp(10px,3vw,14px);letter-spacing:3px;background:linear-gradient(180deg,#1a1408,#0e0c08)}
+    .char-quote-overlay{position:absolute;bottom:12%;left:0;right:0;padding:0 5%;z-index:4;pointer-events:none;opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s}
+    .char-quote-overlay.show{opacity:1;transform:translateY(0)}
+    .char-quote-text{font-family:'Ma Shan Zheng',cursive;font-size:clamp(8.8px,2.56vw,12.8px);line-height:2;color:rgba(240,230,200,.92);text-shadow:0 2px 12px rgba(0,0,0,.9),0 0 6px var(--char-glow,rgba(200,168,107,.4));background:rgba(10,8,4,.55);border-left:2px solid var(--char-glow,var(--gold));padding:8px 12px;border-radius:0 4px 4px 0;backdrop-filter:blur(6px);letter-spacing:1px}
+    .char-info{width:100%;padding:2% 6% 1%;display:flex;flex-direction:column;gap:3px;position:relative;flex-shrink:0}
+    .char-info::before{content:'';position:absolute;left:3%;top:10%;bottom:10%;width:1px;background:linear-gradient(180deg,var(--char-glow,var(--gold-dim)),transparent);opacity:.5}
+    .char-name-row{display:flex;align-items:baseline;gap:8px}
+    .char-name{font-size:clamp(16px,5vw,24px);font-weight:700;color:var(--gold-light);letter-spacing:4px}
+    .char-title{color:var(--text-dim);font-size:clamp(8px,2.5vw,12px);letter-spacing:3px}
+    .char-line{height:1px;width:100%;opacity:.4}
+    .char-desc{color:var(--text-sub);font-size:clamp(10px,2.8vw,13px);line-height:1.6;letter-spacing:1px}
+
+    /* 小人区域（底部空间） */
+    .chibi-area{flex:1;display:flex;align-items:center;justify-content:center;width:100%;overflow:hidden;position:relative}
+    .chibi-area video{height:clamp(80px,22vh,220px);mix-blend-mode:screen;pointer-events:none;position:relative;z-index:1}
+    .chibi-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.12;pointer-events:none}
+
+    .char-seal{position:absolute;right:5%;bottom:clamp(28px,5vh,48px);width:clamp(22px,6vw,32px);height:clamp(22px,6vw,32px);border-radius:2px;background:rgba(192,57,43,.7);display:flex;align-items:center;justify-content:center;font-size:clamp(10px,3vw,14px);color:rgba(240,230,200,.9);box-shadow:0 0 6px rgba(192,57,43,.4);letter-spacing:0}
+    @keyframes sealBurst{0%{box-shadow:0 0 6px rgba(192,57,43,.4)}30%{box-shadow:0 0 0 8px rgba(192,57,43,.25),0 0 18px rgba(192,57,43,.6)}60%{box-shadow:0 0 0 16px rgba(192,57,43,.08),0 0 28px rgba(192,57,43,.4)}100%{box-shadow:0 0 6px rgba(192,57,43,.4)}}
+    .char-seal.burst{animation:sealBurst 1.2s ease-out}
+
+    /* ── 箭头 ── */
+    .arrow-btn{position:absolute;top:38%;z-index:10;transform:translateY(-50%);width:clamp(28px,8vw,40px);height:clamp(40px,12vw,60px);display:flex;align-items:center;justify-content:center;cursor:pointer;animation:floatArrow 2.2s ease-in-out infinite}
+    .arrow-btn.left{left:2%;--dir:-5px} .arrow-btn.right{right:2%;--dir:5px}
+    @keyframes floatArrow{0%,100%{transform:translateY(-50%) translateX(0);opacity:.4}50%{transform:translateY(-50%) translateX(var(--dir));opacity:.9}}
+    .arrow-btn svg{width:100%;height:100%;filter:drop-shadow(0 0 5px var(--gold))}
+
+    .close-btn{position:absolute;top:3%;right:3%;z-index:10;width:clamp(24px,7vw,34px);height:clamp(24px,7vw,34px);cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:.45;transition:opacity .2s}
+    .close-btn:hover{opacity:1} .close-btn svg{width:100%;height:100%}
+
+    .page-dots{position:absolute;bottom:clamp(8px,1.5vh,16px);left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:clamp(4px,1vw,8px);align-items:center}
+    .pdot{width:clamp(3px,1vw,5px);height:clamp(3px,1vw,5px);border-radius:50%;background:var(--border);transition:all .3s}
+    .pdot.active{background:var(--gold);box-shadow:0 0 5px var(--gold);transform:scale(1.5)}
+
+    /* ══ 结尾页（关于我） ══ */
+    #page-ending{background:#0e0c08;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,3vh,24px);padding:8% 10%;text-align:center;position:relative;overflow:hidden}
+    #page-ending::before{content:'';position:absolute;inset:0;background:url('pic4dec/关于我.jpg') center/cover no-repeat;opacity:.5;pointer-events:none;z-index:0}
+    .ending-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:clamp(12px,3vh,24px)}
+    .ending-seal{width:clamp(40px,12vw,60px);height:clamp(40px,12vw,60px);border-radius:2px;background:var(--red-seal);display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(192,57,43,.6);animation:sealPulse 3s ease-in-out infinite;font-size:clamp(16px,5vw,24px);color:#f0e8d8;font-weight:700}
+    @keyframes sealPulse{0%,100%{box-shadow:0 0 12px rgba(192,57,43,.5)}50%{box-shadow:0 0 24px rgba(192,57,43,.8)}}
+    .ending-line{width:30%;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)}
+    .ending-msg{color:var(--text-main);font-size:clamp(12px,3.5vw,16px);line-height:2.4;letter-spacing:2px;text-shadow:0 2px 8px rgba(0,0,0,.8)}
+    .ending-contact{color:var(--text-sub);font-size:clamp(11px,3vw,14px);line-height:2.2;border-top:1px solid rgba(200,168,107,.2);padding-top:clamp(8px,2vh,18px);width:100%;letter-spacing:1px;text-shadow:0 2px 6px rgba(0,0,0,.8)}
+    .ending-contact a{color:var(--gold);text-decoration:none}
+    .btn-back-cover{color:var(--text-sub);font-size:clamp(10px,2.8vw,13px);letter-spacing:3px;cursor:pointer;transition:color .2s;text-shadow:0 2px 6px rgba(0,0,0,.8)}
+    .btn-back-cover:hover{color:var(--gold)}
+
+    /* 关于我（嵌在最后一个角色页底部） */
+    .about-me{width:100%;padding:3% 6%;display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;justify-content:center;position:relative;z-index:1}
+    .about-me::before{content:'';position:absolute;inset:0;background:url('pic4dec/关于我.jpg') center/cover no-repeat;opacity:.4;pointer-events:none}
+    .about-line{width:40%;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)}
+    .about-msg{color:var(--text-main);font-size:clamp(11px,3vw,14px);line-height:2;letter-spacing:2px;text-align:center;text-shadow:0 2px 6px rgba(0,0,0,.8);position:relative}
+    .about-contact{color:var(--text-sub);font-size:clamp(10px,2.8vw,13px);line-height:1.9;letter-spacing:1px;text-align:center;text-shadow:0 2px 6px rgba(0,0,0,.8);position:relative}
+
+    /* ══ 老十 404 glitch ══ */
+    .glitch-page{width:100%;height:100%;position:relative;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:default}
+    .glitch-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,0,0.03) 2px,rgba(0,255,0,0.03) 4px);pointer-events:none;z-index:1;animation:scanMove 8s linear infinite}
+    @keyframes scanMove{0%{background-position:0 0}100%{background-position:0 100%}}
+    .glitch-noise{position:absolute;inset:0;pointer-events:none;z-index:2;opacity:.06;animation:noiseAnim .15s steps(1) infinite}
+    @keyframes noiseAnim{0%{background-position:0 0}10%{background-position:-5% -10%}20%{background-position:-15% 5%}30%{background-position:7% -25%}40%{background-position:20% 10%}50%{background-position:-5% 15%}60%{background-position:15% 3%}70%{background-position:0% 10%}80%{background-position:3% 35%}90%{background-position:-10% 10%}100%{background-position:0 0}}
+    .glitch-main{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;gap:clamp(8px,2vh,18px);padding:0 8%;width:100%}
+    .glitch-404{font-size:clamp(48px,18vw,100px);font-weight:700;color:#0f0;font-family:monospace;letter-spacing:.1em;position:relative;animation:glitch404 3s infinite}
+    .glitch-404::before,.glitch-404::after{content:'404';position:absolute;top:0;left:0;width:100%;height:100%}
+    .glitch-404::before{color:#f00;clip-path:polygon(0 0,100% 0,100% 35%,0 35%);animation:glitchTop 3s infinite;transform:translateX(-3px)}
+    .glitch-404::after{color:#00f;clip-path:polygon(0 65%,100% 65%,100% 100%,0 100%);animation:glitchBot 3s infinite;transform:translateX(3px)}
+    @keyframes glitch404{0%,94%,100%{text-shadow:none}95%{text-shadow:3px 0 #f00,-3px 0 #00f}97%{text-shadow:-4px 0 #f00,4px 0 #00f}}
+    @keyframes glitchTop{0%,94%,100%{transform:translateX(-3px);opacity:0}95%{transform:translateX(4px);opacity:.8}97%{transform:translateX(-2px);opacity:.6}}
+    @keyframes glitchBot{0%,94%,100%{transform:translateX(3px);opacity:0}95%{transform:translateX(-4px);opacity:.8}97%{transform:translateX(2px);opacity:.6}}
+    .glitch-label{font-family:monospace;font-size:clamp(10px,3vw,14px);color:#0f0;letter-spacing:.2em;animation:blink404 1.2s step-end infinite}
+    @keyframes blink404{0%,100%{opacity:1}50%{opacity:0}}
+    .glitch-corrupt{font-family:monospace;font-size:clamp(9px,2.5vw,12px);color:rgba(0,255,0,.5);letter-spacing:.1em;line-height:2;text-align:center;animation:corruptShift 4s infinite}
+    @keyframes corruptShift{0%,90%,100%{transform:translateX(0);filter:none}91%{transform:translateX(-6px);filter:hue-rotate(90deg)}93%{transform:translateX(4px);filter:hue-rotate(180deg)}95%{transform:translateX(-2px);filter:none}}
+    .glitch-bar{width:60%;height:2px;background:linear-gradient(90deg,transparent,#0f0,transparent);animation:barScan 2s linear infinite;position:relative}
+    @keyframes barScan{0%{opacity:0;transform:scaleX(.2)}30%{opacity:1}70%{opacity:1}100%{opacity:0;transform:scaleX(.2)}}
+    .glitch-tear{position:absolute;left:0;right:0;height:3px;background:rgba(255,0,0,.4);animation:tearMove 5s linear infinite;z-index:4;pointer-events:none;box-shadow:0 0 8px rgba(255,0,0,.6)}
+    @keyframes tearMove{0%{top:-10px;opacity:0}10%{opacity:1}90%{opacity:.5}100%{top:110%;opacity:0}}
+    .glitch-close{position:absolute;top:3%;right:3%;z-index:10;width:clamp(24px,7vw,34px);height:clamp(24px,7vw,34px);cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:.45;transition:opacity .2s}
+    .glitch-close:hover{opacity:1}
+    .glitch-arrows{position:absolute;top:38%;z-index:10;transform:translateY(-50%);width:clamp(28px,8vw,40px);height:clamp(40px,12vw,60px);display:flex;align-items:center;justify-content:center;cursor:pointer;animation:floatArrow 2.2s ease-in-out infinite}
+    .glitch-arrows.left{left:2%;--dir:-5px} .glitch-arrows.right{right:2%;--dir:5px}
+
+    /* ── 音乐 ── */
+    #music-btn{position:fixed;top:clamp(8px,2vh,18px);right:clamp(8px,2vw,18px);width:clamp(30px,8vw,40px);height:clamp(30px,8vw,40px);border-radius:2px;background:rgba(20,16,8,.9);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;font-size:clamp(12px,3.5vw,16px);display:flex;align-items:center;justify-content:center;z-index:100;transition:border-color .2s,color .2s,box-shadow .2s}
+    #music-btn.on{border-color:var(--gold);color:var(--gold);box-shadow:0 0 8px rgba(200,168,107,.4)}
+  </style>
+</head>
+<body>
+<canvas id="particle-canvas"></canvas>
+<button id="music-btn">♪</button>
+<audio id="bgm" loop src="wav/滋味常.mp3"></audio>
+<audio id="voice-audio"></audio>
+
+<div id="book-stage">
+  <!-- 封面 -->
+  <div class="book-page current" id="page-cover">
+    <div style="width:100%;height:100%" onclick="startBook()">
+      <div class="cover-bg-texture"></div>
+      <div class="cover-vert-lines"></div>
+      <div class="cover-inner">
+        <div class="cover-seal-top"></div>
+        <div class="cover-logo-area"><img src="pic4dec/模组_人间百味.png" alt="人间百味"></div>
+        <div class="cover-title-block">
+          <div class="cover-title-vert"><span>岁</span><span>家</span></div>
+          <div class="cover-title-divider"></div>
+          <div class="cover-title-sub">SUI · FAMILY</div>
+        </div>
+        <div class="cover-bottom-line"></div>
+        <div class="cover-sub-text" style="cursor:pointer" onclick="event.stopPropagation();goToPage(characters.length)">关于我</div>
+      </div>
+      <div class="cover-hint">点击翻开</div>
+    </div>
+  </div>
+
+  <!-- 角色页（JS生成，最后一页含关于我） -->
+</div>
+
+<script>
+const CHIBI_DEFAULT = 'items/"小自在"-青玉砚-战斗-Idle-x1.webm';
+const medals = [
+  'pic4dec/1.png','pic4dec/2.png',
+  'pic4dec/medal_rogue_5_03.png','pic4dec/medal_rogue_5_04.png',
+  'pic4dec/medal_rogue_5_05.png','pic4dec/medal_rogue_5_06.png',
+  'pic4dec/medal_rogue_5_07.png','pic4dec/medal_rogue_5_08.png',
+  'pic4dec/medal_rogue_5_09.png','pic4dec/medal_rogue_5_10.png',
+  'pic4dec/medal_rogue_5_11.png','pic4dec/medal_rogue_5_12.png',
+];
+// 底部场景图（循环分配给12个角色页）
+const sceneBgs = [
+  'pic4dec/背景1.png','pic4dec/背景2.png','pic4dec/背景3.png',
+  'pic4dec/背景5.jpg','pic4dec/封面.jpg',
+];
+
+const characters = [
+  {name:'重岳',title:'朔',comment:'大哥天天抓我去习武，啊呀快跑！',desc:'',
+   quotes:['博士，今日的行程安排我已确认。若有要事，随时可以交给我。','罗德岛的待客之道，真是令人动容，难怪我那几个妹妹会喜欢这里……唔，误会？那，换我做你的副将也无妨。','"博士"，这个称呼让我想起打过交道的大炎学士，体察万千，见微知著。你我似是故人？','那场混沌梦醒后，我确实去过许多地方……知交越多，越是寥落，可能在这点上，我们有些相似吧。','身在朝堂的求全求解，身在江湖的为仇为怨……执念太深，岁月又短，往往一个念想、一件事就贯穿了他们的一生。人哪，可怜可悲，可敬可叹！','你问那场对决？他苦练四十年，赢了我一拳，而我又练了多少个春秋呢？算起来，输的反倒是我。','形不成形，意不在意……再去练练吧。'],
+   glow:'rgba(180,140,80,0.5)',voices:['wav/1-1.wav','wav/1-2.wav','wav/1-3.wav','wav/1-4.wav','wav/1-5.wav'],image:'pic/1.jpg',chibi:'items/重岳-默认-正面-Skill_3-x1.webm',showQuote:true},
+  {name:'望',title:'',comment:'再让我五个子我肯定能下过望哥',desc:'',
+   quotes:['博士！助理的工作我都预习好了！……啊，不过要是做错了，你要马上告诉我哦。','我是望！岁家最小的那个！博士，请多指教！','博士，你觉得我大哥厉害，还是我更厉害？……啊，当我没问。','我虽然年纪小，但本事不小！以后就由我来保护博士吧！','博士，你就像我多了个哥哥/姐姐一样！……诶？我说错话了吗？','要是有一天我们能像普通人家那样，大家一起吃顿饭就好了……','呼……（小声）不能睡，不能睡，博士还在工作呢……'],
+   glow:'rgba(160,200,220,0.45)',voices:['wav/2-1.wav','wav/2-2.wav','wav/2-3.wav','wav/2-4.wav','wav/2-5.wav'],image:'pic/2.jpg',chibi:'items/望-默认-正面-Idle_2-x1.webm',showQuote:true},
+  {name:'令',title:'',comment:'多吃两口才好写诗嘛，等等等，我还不能喝酒！',desc:'',
+   quotes:['博士，今日是醉里看花，还是醒时论剑？呵呵，随你高兴。','令，如此称呼我就好，我那两个麻烦妹妹没给您添麻烦吧？唔？见过我？啊……也许是在梦中吧。','年说的不错，这场千秋大梦，本就该醒了。','得意什么？呵，八千年为春，八千年为冬，梦见的那些，也不过短短几个秋，如此罢了。','又一曲，韵意磅礴。博士，兴许你我确是知音。','胜败乃兵家常事，既然能进退自如，便不算完败。','云峦波涛，千里枯路，江山故人我，晚秋行舟。'],
+   glow:'rgba(200,168,107,0.5)',voices:['wav/3-1.wav','wav/3-2.wav','wav/3-3.wav','wav/3-4.wav','wav/3-5.wav'],image:'pic/3.jpg',chibi:'items/令-默认-正面-Skill_02-x1.webm',showQuote:true},
+  {name:'均',title:'',comment:'四姐看起来太高冷了，生人勿近！',desc:'',
+   quotes:['博士，凡事讲究一个度，过犹不及。你今天……似乎已经够了。'],
+   glow:'rgba(140,180,140,0.45)',voices:[],image:'pic/4.jpg',chibi:'',showQuote:true},
+  {name:'颉',title:'',comment:'颉姐对我最好了...颉姐...我会带着你的那份努力下去的！',desc:'',
+   quotes:['有些话不必说出口，你我都明白的。'],
+   glow:'rgba(200,120,100,0.45)',voices:[],image:'pic/5.jpg',chibi:'',showQuote:true},
+  {name:'黍',title:'',comment:'黍姐姐种的蔬菜做起来又新鲜又好吃',desc:'',
+   quotes:['博士，这是今日需要处理的文件。耕作有时，文书亦有时，我会陪你处理完毕。','黍。听说你能让这片大地长出不一样的庄稼？我很期待。','博士，你看起来总是很疲惫。尝尝这个，我家乡的土方，能提神。','守望一片田地，和守望一座城，其实没什么不同。都需要耐心。','若有一天我不得不离开，这片田……就托付给你了。','博士，你是我见过最不像"农夫"的农夫。但你种下的"因"，或许真能结出好果子。','春生夏长，秋收冬藏……博士，你走到哪一季了？'],
+   glow:'rgba(200,168,107,0.5)',voices:['wav/6-1.wav','wav/6-2.wav','wav/6-3.wav','wav/6-4.wav','wav/6-5.wav'],image:'pic/6.jpg',chibi:'items/黍-春日宴-正面-Idle-x1.webm',showQuote:true},
+  {name:'绩',title:'',comment:'好久才能见到一次的七哥，外面的世界，真想去看看啊',desc:'',
+   quotes:['行路万里，不过是为了有朝一日能回头望望。'],
+   glow:'rgba(160,140,200,0.45)',voices:[],image:'pic/7.jpg',chibi:'',showQuote:true},
+  {name:'易',title:'',comment:'不不不，不去界院玩了，绝对会迷路吧！',desc:'',
+   quotes:['规矩是死的，人是活的。博士，你懂我意思吧？'],
+   glow:'rgba(100,180,200,0.45)',voices:[],image:'pic/8.jpg',chibi:'',showQuote:true},
+  {name:'年',title:'',comment:'大家要是能多关照一点年姐，该多好',desc:'',
+   quotes:['哟，博士，今天想怎么过？我这儿有上好的铁……啊不，是上好的茶！','我叫年，如假包换的岁兽碎片之一。你是博士？看着挺有意思的嘛。','博士，你老盯着我干嘛？我脸上有字儿？还是说……你也想试试我新打的这把刀？','我那两个姐姐啊，一个比一个能躲清静。也就我，爱凑热闹，哪儿热闹往哪儿钻。','火锅一个人吃真没劲，博士，下次你得陪我，不准跑！','别看我这副德行，真要打起架来，护你个周全还是没问题的。','哈啊……有点无聊了，博士，找点乐子去？'],
+   glow:'rgba(200,168,107,0.5)',voices:['wav/9-1.wav','wav/9-2.wav','wav/9-3.wav','wav/9-4.wav','wav/9-5.wav'],image:'pic/9.jpg',chibi:'items/年-默认-正面-Skill_1_Loop-x1.webm',showQuote:true},
+  {name:'老十',title:'',comment:'',desc:'',
+   quotes:[],
+   glow:'rgba(0,255,0,0.3)',voices:[],image:'',chibi:'',showQuote:false,glitch:true},
+  {name:'夕',title:'',comment:'天天就知道泡在画室里的发霉宝宝，唉唉唉什么时候在听的？！',desc:'',
+   quotes:['……是你啊。这里倒是比画里清净，只要你别太吵就行。','夕。既然来了，就会遵守这里的规矩……大概。','你……别靠太近。我不习惯和人打交道。','画中景虽好，但看久了也腻。倒是你这罗德岛，吵是吵了点，却也有些……生气。','这幅画送你。不要就算了。（小声）……我画了很久的。','博士，若有一天我消失了，你会记得……不，没什么。','青墨留白处，皆是倦意……'],
+   glow:'rgba(220,140,80,0.5)',voices:['wav/11-1.wav','wav/11-2.wav','wav/11-3.wav','wav/11-4.wav','wav/11-5.wav'],image:'pic/11.jpg',chibi:'items/夕-默认-正面-Skill3_Attack-x1.webm',showQuote:true},
+  {name:'余',title:'',comment:'做饭天下第一香~！沫路#1143',desc:'',
+   quotes:['博士？没事没事，你忙你的，我就占个小角落，绝对不打扰你办公……（嘀咕）这位置采光正好，适合发会儿呆。','寓居市井的厨师，余。博士，你要是饿了，随时可以来后厨找我开小灶。','博士，你天天吃那种营养液可不行。身体是革命的本钱，来，尝尝我刚熬的汤。','切配烧洗，样样全能？哈哈，那是糊弄外人的。其实我就是个……离不开灶台的普通人。','这份菜单是空白的。博士，你想吃什么，我就写什么，只做给你一个人。','看着你吃得开心，比我自己尝到味道还满足。这大概就是厨子的通病吧。','火候到了，味道自然就对了……急不得，急不得。'],
+   glow:'rgba(200,168,107,0.5)',voices:['wav/12-1.wav','wav/12-2.wav','wav/12-3.wav','wav/12-4.wav','wav/12-5.wav'],image:'pic/12.jpg',chibi:'items/余-默认-正面-Skill_2-x1.webm',showQuote:true},
+];
+
+let pages=[], currentIdx=0, isAnimating=false;
+const totalPages = characters.length+2; // 封面 + 12角色 + 感谢尾页
+
+function buildCharPages(){
+  const stage=document.getElementById('book-stage');
+  const lastIdx = characters.length - 1;
+  characters.forEach((c,i)=>{
+    const bg = sceneBgs[i % sceneBgs.length];
+    const isLast = i === lastIdx;
+    const div=document.createElement('div');
+    div.className='book-page prev'; div.id=`page-char-${i}`;
+
+    // 老十：glitch 404 页
+    if(c.glitch){
+      div.innerHTML=`
+        <div class="glitch-page">
+          <div class="glitch-scanlines"></div>
+          <div class="glitch-noise" style="background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/><feColorMatrix type=%22saturate%22 values=%220%22/></filter><rect width=%22200%22 height=%22200%22 filter=%22url(%23n)%22 opacity=%221%22/></svg>')"></div>
+          <div class="glitch-tear"></div>
+          <div class="glitch-main">
+            <div class="glitch-404">404</div>
+            <div class="glitch-label">▌ D̷A̷T̷A̷_̷N̷O̷T̷_̷F̷O̷U̷N̷D̷ ▐</div>
+            <div class="glitch-bar"></div>
+            <div class="glitch-corrupt">E̵R̵R̵O̵R̵ ░░ Ö̷P̸E̷R̸A̷T̸O̵R̶_̷1̸0̷ ░░ Ụ̴̡̢̡̡̢͍͖̘͈͎͎̠̠͍̯̠͔̣͓͚̙̤͇̤̤̯̱̞̑̉̉̌̔̇̐̎̓̒̚Ṅ̷̢̡̧̧̛̛̛̮̙͙̗̣͍̙͉̦̥͍͇͈̦̰̱̆̀̐̐̏̈́̈́̎̋̆̀̿͊̓͛̀͘͝͝͠K̵̨̛̛̥̮͙͖͍͇̗̥̘̹͇͔̖̙̻̯̒̒̋̓̐̒̕͘͝͝N̷̛̗̘̹̔̌̈́̒̓͑̿̇̈́̌͘̕͘͝Ö̸̢̧̧̙̮͈̰̣͍͓̩̺̠̬̮̣͚̝̫̐̒̽̔̉͛́̑̃̑̚W̴̧͓̬̩̱͓͚̬̘̩̞̲̗͙͖͙̞̬̼͌̊̿̐̾̑̈͊̐͒͑̐̊̑̿͜͠͠N̸̛̖̤̲̟̻͖̩̞̘̦̙͚̾̊̑̈́̋̾̏̈́̾͊̿͘͜<br>░▒▓ 数̷̨̛͉̺̪̭̺̭̀̓̔̀̌͐̓͒͝据̵̣̉̑̃̂͆̾̕̕͝损̸̡̛̼͕̻͙̯̲̦͐̔̾̈́̈͜͠坏̸̢̢̰̲̺̳̤̩̫̒͑ · 无̶̣̺̙̖̖̻̝̪͐͂̒̑̍̌̈́̓͘͝法̷̰̙̗͔̆̿̎̒̀͆͂̽͆͘͘͝检̴̡̡͉̗̻͚͊͑̄̊̑͋̇̑̐͒̿͝索̵̡͎̦̹̭̻͉͓̯̯͚͂̾̓̈́̿̑͠ ▓▒░<br>[ S̶Y̴S̷T̸E̵M̸ ░░ O̸V̴E̷R̷L̵O̷A̸D̸ ]</div>
+          </div>
+          <div class="glitch-close" onclick="goToPage(0)">
+            <svg viewBox="0 0 18 18" fill="none"><line x1="3" y1="3" x2="15" y2="15" stroke="#0f0" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="3" x2="3" y2="15" stroke="#0f0" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="glitch-arrows left" onclick="goToPage(${i})"><svg viewBox="0 0 26 46" fill="none"><polyline points="18,3 7,23 18,43" stroke="#0f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="glitch-arrows right" onclick="goToPage(${i+2})"><svg viewBox="0 0 26 46" fill="none"><polyline points="8,3 19,23 8,43" stroke="#0f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="page-dots" style="z-index:10">${characters.map((_,j)=>`<div class="pdot${j===i?' active':''}" style="${j===i?'background:#0f0;box-shadow:0 0 5px #0f0':''}"></div>`).join('')}</div>
+        </div>`;
+      stage.appendChild(div);
+      return;
+    }
+
+    div.innerHTML=`
+      <div class="char-page">
+        <div class="close-btn" onclick="goToPage(0)">
+          <svg viewBox="0 0 18 18" fill="none"><line x1="3" y1="3" x2="15" y2="15" stroke="#c8a86b" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="3" x2="3" y2="15" stroke="#c8a86b" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="char-image-wrap" style="--char-glow:${c.glow}" onclick="playVoice(${i})">
+          <div class="char-top-bar"></div>
+          ${c.image?`<img class="char-img" src="${c.image}">`:`<div class="char-img-placeholder">${c.name} 立绘占位</div>`}
+          <img src="${medals[i]}" style="position:absolute;top:8%;right:8%;width:clamp(40px,12%,70px);mix-blend-mode:multiply;pointer-events:none;z-index:3;opacity:0.85;">
+          <div class="char-quote-overlay${c.showQuote?' show':''}" id="overlay-${i}"><div class="char-quote-text" style="border-left-color:${c.glow}" id="quote-text-${i}">${c.quotes[0]||''}</div></div>
+        </div>
+        <div class="char-info" style="--char-glow:${c.glow}">
+          <div class="char-name-row">
+            <div class="char-name" style="text-shadow:0 0 12px ${c.glow}">${c.name}</div>
+            ${c.title?`<div class="char-title">${c.title}</div>`:''}
+          </div>
+          <div class="char-line" style="background:linear-gradient(90deg,${c.glow},transparent)"></div>
+          ${c.comment?`<div class="char-desc" style="font-style:italic;color:var(--text-dim)">${c.comment}</div>`:''}
+        </div>
+        ${isLast ? `
+        <div class="chibi-area" style="flex:1;display:flex;align-items:center;justify-content:space-between;padding:0 8%;gap:4%">
+          <video src="${c.chibi||CHIBI_DEFAULT}" autoplay loop muted playsinline style="height:clamp(80px,22vh,200px);mix-blend-mode:screen;pointer-events:none;flex-shrink:0"></video>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right;padding-right:clamp(28px,8vw,44px)">
+            <div class="about-line" style="width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)"></div>
+            <div class="about-contact" style="color:var(--text-sub);font-size:clamp(10px,2.8vw,13px);line-height:1.9;letter-spacing:1px;text-shadow:0 2px 6px rgba(0,0,0,.8)">作者：沫路 · 扩列请翻页！→</div>
+          </div>
+        </div>
+        ` : `
+        <div class="chibi-area">
+          <div class="chibi-bg" style="background-image:url('${bg}')"></div>
+          <video src="${c.chibi||CHIBI_DEFAULT}" autoplay loop muted playsinline></video>
+        </div>
+        `}
+        <div class="char-seal">${c.name[0]}</div>
+        ${i>0
+          ?`<div class="arrow-btn left" onclick="goToPage(${i})"><svg viewBox="0 0 26 46" fill="none"><polyline points="18,3 7,23 18,43" stroke="#c8a86b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
+          :`<div class="arrow-btn left" onclick="goToPage(0)" style="opacity:.3"><svg viewBox="0 0 26 46" fill="none"><polyline points="18,3 7,23 18,43" stroke="#7a6040" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`}
+        <div class="arrow-btn right" onclick="goToPage(${i+2})"><svg viewBox="0 0 26 46" fill="none"><polyline points="8,3 19,23 8,43" stroke="#c8a86b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="page-dots">${characters.map((_,j)=>`<div class="pdot${j===i?' active':''}"></div>`).join('')}</div>
+      </div>`;
+    stage.appendChild(div);
+  });
+
+  // 感谢尾页（复用 char-page 结构）
+  const ending=document.createElement('div');
+  ending.className='book-page prev'; ending.id='page-ending-13';
+  ending.innerHTML=`
+    <div class="char-page">
+      <div class="close-btn" onclick="goToPage(0)">
+        <svg viewBox="0 0 18 18" fill="none"><line x1="3" y1="3" x2="15" y2="15" stroke="#c8a86b" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="3" x2="3" y2="15" stroke="#c8a86b" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="char-image-wrap" style="--char-glow:rgba(200,168,107,0.5);cursor:default">
+        <div class="char-top-bar"></div>
+        <img class="char-img" src="pic4dec/我.jpg" style="object-fit:contain;background:#fff">
+      </div>
+      <div class="char-info" style="--char-glow:rgba(200,168,107,0.5)">
+        <div class="char-name-row">
+          <div class="char-name" style="text-shadow:0 0 12px rgba(200,168,107,0.5)">沫路</div>
+        </div>
+        <div class="char-line" style="background:linear-gradient(90deg,rgba(200,168,107,0.5),transparent)"></div>
+        <div class="char-desc" style="font-style:italic;color:var(--text-dim)">祝您生活愉快，博士。</div>
+      </div>
+      <div class="chibi-area">
+        <div class="chibi-bg" style="background-image:url('pic4dec/关于我.jpg')"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;z-index:1;padding:0 8%">
+          <div class="about-line" style="width:40%;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)"></div>
+          <div class="about-msg" style="color:var(--text-main);font-size:clamp(11px,3vw,14px);line-height:2;letter-spacing:2px;text-align:center;text-shadow:0 2px 6px rgba(0,0,0,.8)">祝您生活愉快，博士。</div>
+          <div class="about-msg" style="color:var(--text-sub);font-size:clamp(10px,2.8vw,13px);line-height:1.8;letter-spacing:1px;text-align:center;text-shadow:0 2px 6px rgba(0,0,0,.8)">沫沫人生，陌陌你我。</div>
+        </div>
+      </div>
+      <div class="char-seal">岁</div>
+      <div class="arrow-btn left" onclick="goToPage(${characters.length})"><svg viewBox="0 0 26 46" fill="none"><polyline points="18,3 7,23 18,43" stroke="#c8a86b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="arrow-btn right" onclick="goToPage(0)" style="opacity:.3"><svg viewBox="0 0 26 46" fill="none"><polyline points="8,3 19,23 8,43" stroke="#7a6040" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>`;
+  stage.appendChild(ending);
+}
+
+function initPages(){
+  buildCharPages();
+  pages=[document.getElementById('page-cover'),...characters.map((_,i)=>document.getElementById(`page-char-${i}`)),document.getElementById('page-ending-13')];
+  pages.forEach((p,i)=>{p.className='book-page '+(i===0?'current':'prev');p.style.zIndex=totalPages-i;if(i!==0)p.style.visibility='hidden'});
+}
+
+function goToPage(idx){
+  if(isAnimating||idx===currentIdx)return;
+  if(idx<0||idx>=totalPages)return;
+  if(!pages[idx])return;
+  isAnimating=true;
+  const from=pages[currentIdx],to=pages[idx],fwd=idx>currentIdx;
+  document.getElementById('voice-audio').pause();
+  document.querySelectorAll('.char-quote-overlay').forEach(el=>el.classList.remove('show'));
+  if(fwd){
+    from.style.zIndex=totalPages+1;from.classList.remove('current');from.classList.add('flip-out');
+    setTimeout(()=>{to.style.zIndex=totalPages;to.style.visibility='visible';to.classList.remove('prev','next','flip-in');to.classList.add('current')},350);
+  }else{
+    to.style.zIndex=totalPages+1;to.style.visibility='visible';to.classList.remove('prev','next');to.classList.add('flip-in');
+    void to.offsetWidth;to.classList.remove('flip-in');to.classList.add('current');
+    from.style.zIndex=totalPages;from.classList.remove('current');from.classList.add('next');
+  }
+  setTimeout(()=>{from.classList.remove('flip-out','next','current','flip-in');from.classList.add(fwd?'prev':'next');from.style.zIndex='';from.style.visibility='';to.style.zIndex='';currentIdx=idx;isAnimating=false;playPageVoice()},780);
+}
+
+function startBook(){goToPage(1)}
+
+const voiceAudio=document.getElementById('voice-audio');
+function randomVoice(ci){const c=characters[ci];if(!c.voices||!c.voices.length)return null;return c.voices[Math.floor(Math.random()*c.voices.length)]}
+function randomQuote(ci){const c=characters[ci];if(!c.quotes||!c.quotes.length)return null;return c.quotes[Math.floor(Math.random()*c.quotes.length)]}
+let quoteTimer=null;
+function scheduleHideQuote(overlay){
+  if(quoteTimer)clearTimeout(quoteTimer);
+  quoteTimer=setTimeout(()=>{overlay.classList.remove('show');quoteTimer=null},5000);
+}
+function playVoice(ci){
+  const c=characters[ci];
+  const q=randomQuote(ci);
+  const overlay=document.getElementById(`overlay-${ci}`);
+  const txt=document.getElementById(`quote-text-${ci}`);
+  voiceAudio.pause();
+  const src=randomVoice(ci);
+  if(src){voiceAudio.src=src;voiceAudio.play().catch(()=>{})}
+  if(!q||!overlay||!txt)return;
+  if(overlay.classList.contains('show')){
+    overlay.classList.remove('show');
+    setTimeout(()=>{txt.textContent=q;overlay.classList.add('show');scheduleHideQuote(overlay)},520);
+  }else{
+    txt.textContent=q;
+    overlay.classList.add('show');
+    scheduleHideQuote(overlay);
+  }
+}
+function playPageVoice(){
+  const ci=currentIdx-1;
+  if(ci>=0&&ci<characters.length){
+    const c=characters[ci];
+    if(c.glitch)return;
+    // 翻页时显示第一条台词
+    if(c.showQuote && c.quotes && c.quotes.length){
+      const overlay=document.getElementById(`overlay-${ci}`);
+      const txt=document.getElementById(`quote-text-${ci}`);
+      if(txt) txt.textContent=c.quotes[0];
+      if(overlay){overlay.classList.add('show');scheduleHideQuote(overlay);}
+    }
+    const src=randomVoice(ci);
+    if(src){voiceAudio.src=src;voiceAudio.play().catch(()=>{})}
+    else{
+      // 无语音：触发印章脉冲
+      const seal=document.querySelector(`#page-char-${ci} .char-seal`);
+      if(seal){seal.classList.remove('burst');void seal.offsetWidth;seal.classList.add('burst');}
+    }
+  }
+}
+
+let musicOn=true;const bgm=document.getElementById('bgm');bgm.volume=.5;
+bgm.play().catch(()=>{document.addEventListener('click',function t(){bgm.play().catch(()=>{})},{once:true})});
+document.getElementById('music-btn').textContent='♫';document.getElementById('music-btn').classList.add('on');
+document.getElementById('music-btn').addEventListener('click',()=>{musicOn=!musicOn;const b=document.getElementById('music-btn');b.textContent=musicOn?'♫':'♪';b.classList.toggle('on',musicOn);if(musicOn)bgm.play().catch(()=>{});else bgm.pause()});
+
+(function(){const c=document.getElementById('particle-canvas'),x=c.getContext('2d');let W,H;
+const d=Array.from({length:40},()=>({x:Math.random()*1400,y:Math.random()*900,r:Math.random()*1.5+.3,vx:(Math.random()-.5)*.15,vy:(Math.random()-.5)*.1-.05,a:Math.random()*.15+.02}));
+const l=Array.from({length:8},()=>({x:Math.random()*1400,y:Math.random()*900,h:Math.random()*30+10,vy:-.2-Math.random()*.2,a:Math.random()*.08+.02}));
+function r(){W=c.width=innerWidth;H=c.height=innerHeight}addEventListener('resize',r);r();
+(function draw(){x.clearRect(0,0,W,H);d.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;x.beginPath();x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fillStyle='#c8a86b';x.globalAlpha=p.a;x.fill()});
+l.forEach(p=>{p.y+=p.vy;if(p.y<-50)p.y=H+50;x.beginPath();x.moveTo(p.x,p.y);x.lineTo(p.x,p.y+p.h);x.strokeStyle='#c8a86b';x.globalAlpha=p.a;x.lineWidth=.5;x.stroke()});x.globalAlpha=1;requestAnimationFrame(draw)})()})();
+initPages();
+</script>
+</body>
+</html>
