@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>岁家 · 明日方舟</title>
+  <title>岁家花名册</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <style>
     :root {
@@ -60,7 +60,7 @@
     .cover-sub-text{font-size:clamp(10px,3vw,14px);color:var(--gold);letter-spacing:4px;margin-top:8px;padding:4px 16px;border:1px solid rgba(200,168,107,.3);border-radius:2px;z-index:2}
     #page-cover::after{content:'';position:absolute;top:-100%;left:-40%;width:30%;height:300%;background:linear-gradient(100deg,transparent 40%,rgba(200,168,107,.08) 50%,transparent 60%);animation:coverSweep 6s ease-in-out infinite}
     @keyframes coverSweep{0%{transform:translateX(-100%)}70%,100%{transform:translateX(500%)}}
-    .cover-hint{position:absolute;bottom:clamp(16px,3vh,36px);color:var(--text-dim);font-size:clamp(9px,2.5vw,12px);letter-spacing:4px;animation:blink 2.5s ease-in-out infinite;z-index:1}
+    .cover-hint{position:absolute;bottom:clamp(16px,3vh,36px);left:0;right:0;text-align:center;color:var(--gold);font-size:clamp(12px,3.5vw,16px);letter-spacing:6px;animation:blink 2s ease-in-out infinite;z-index:1;text-shadow:0 0 12px rgba(200,168,107,.7);font-family:'Noto Serif SC',serif}
     @keyframes blink{0%,100%{opacity:.3}50%{opacity:.8}}
 
     /* ══ 角色页 ══ */
@@ -155,9 +155,85 @@
     /* ── 音乐 ── */
     #music-btn{position:fixed;top:clamp(8px,2vh,18px);right:clamp(8px,2vw,18px);width:clamp(30px,8vw,40px);height:clamp(30px,8vw,40px);border-radius:2px;background:rgba(20,16,8,.9);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;font-size:clamp(12px,3.5vw,16px);display:flex;align-items:center;justify-content:center;z-index:100;transition:border-color .2s,color .2s,box-shadow .2s}
     #music-btn.on{border-color:var(--gold);color:var(--gold);box-shadow:0 0 8px rgba(200,168,107,.4)}
+
+    /* ══ 加载页 ══ */
+    #loading-screen{
+      position:fixed;inset:0;z-index:9999;
+      background:linear-gradient(160deg,#1e180e,#0e0c08);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:clamp(12px,3vh,22px);
+      transition:opacity .6s ease;
+      overflow:hidden;
+    }
+    #loading-screen::before{
+      content:'';position:absolute;inset:0;pointer-events:none;
+      background:
+        linear-gradient(rgba(200,168,107,0.04) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(200,168,107,0.04) 1px,transparent 1px);
+      background-size:clamp(28px,7vw,44px) clamp(28px,7vw,44px);
+      animation:loadGridDrift 8s linear infinite;
+    }
+    @keyframes loadGridDrift{0%{transform:translateY(0)}100%{transform:translateY(clamp(28px,7vw,44px))}}
+    #loading-screen::after{
+      content:'';position:absolute;inset:0;pointer-events:none;
+      background:url('https://cdn.jsdelivr.net/gh/SeiyunSky/arknights-sui@main/pic4dec/封面.jpg') center/cover no-repeat;
+      opacity:.07;
+    }
+    #loading-screen.fade-out{opacity:0;pointer-events:none}
+    .load-seal{
+      width:clamp(40px,12vw,60px);height:clamp(40px,12vw,60px);
+      border-radius:2px;background:var(--red-seal);
+      display:flex;align-items:center;justify-content:center;
+      font-size:clamp(18px,5.5vw,28px);font-weight:700;color:#f0e8d8;
+      box-shadow:0 0 18px rgba(192,57,43,.5);
+      position:relative;z-index:1;
+      animation:loadSealPulse 1.8s ease-in-out infinite;
+    }
+    @keyframes loadSealPulse{0%,100%{box-shadow:0 0 10px rgba(192,57,43,.4)}50%{box-shadow:0 0 28px rgba(192,57,43,.9),0 0 48px rgba(200,168,107,.3)}}
+    .load-title{
+      font-family:'Noto Serif SC',serif;color:var(--gold-light);
+      font-size:clamp(14px,4.5vw,20px);letter-spacing:clamp(6px,2vw,12px);
+      text-shadow:0 0 16px rgba(200,168,107,.7);
+      position:relative;z-index:1;
+      animation:loadTitleBreath 2s ease-in-out infinite;
+    }
+    @keyframes loadTitleBreath{0%,100%{opacity:.7;text-shadow:0 0 10px rgba(200,168,107,.4)}50%{opacity:1;text-shadow:0 0 24px rgba(200,168,107,.9),0 0 48px rgba(200,168,107,.3)}}
+    .load-bar-wrap{
+      width:clamp(160px,50vw,260px);height:2px;position:relative;z-index:1;
+      background:rgba(200,168,107,.12);border-radius:1px;
+    }
+    .load-bar{
+      width:0%;height:100%;border-radius:1px;
+      background:linear-gradient(90deg,#7a6040,#c8a86b,#e8d0a0,#c8a86b,#7a6040);
+      background-size:200% 100%;
+      animation:loadBarFill 2.4s cubic-bezier(.1,.4,.3,1) forwards,loadBarShimmer 1.2s linear infinite;
+      box-shadow:0 0 8px rgba(200,168,107,.5);
+    }
+    @keyframes loadBarFill{0%{width:0%}100%{width:100%}}
+    @keyframes loadBarShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .load-sub{
+      font-family:'Noto Serif SC',serif;color:rgba(200,168,107,.35);
+      font-size:clamp(9px,2.2vw,11px);letter-spacing:clamp(3px,1.2vw,6px);
+      position:relative;z-index:1;
+    }
+    .load-hint{
+      position:relative;z-index:1;
+      font-family:'Noto Serif SC',serif;color:rgba(200,168,107,.5);
+      font-size:clamp(10px,2.8vw,13px);letter-spacing:1px;text-align:center;
+      padding:0 clamp(16px,5vw,32px);
+    }
   </style>
 </head>
 <body>
+<!-- 加载页 -->
+<div id="loading-screen">
+  <div class="load-seal">岁</div>
+  <div class="load-title">岁 家</div>
+  <div class="load-bar-wrap"><div class="load-bar"></div></div>
+  <div class="load-sub">SUI · FAMILY</div>
+  <div class="load-hint">若加载较慢或无法正常显示，请使用科学上网工具</div>
+</div>
+
 <canvas id="particle-canvas"></canvas>
 <button id="music-btn">♪</button>
 <audio id="bgm" loop src="https://cdn.jsdelivr.net/gh/SeiyunSky/arknights-sui@main/mp3/滋味常.mp3"></audio>
@@ -178,9 +254,9 @@
           <div class="cover-title-sub">SUI · FAMILY</div>
         </div>
         <div class="cover-bottom-line"></div>
+        <div class="cover-hint" style="position:relative;bottom:auto;left:auto;right:auto;">点击封面翻页</div>
         <div class="cover-sub-text" style="cursor:pointer" onclick="event.stopPropagation();goToPage(characters.length)">关于我</div>
       </div>
-      <div class="cover-hint">点击翻开</div>
     </div>
   </div>
 
@@ -506,6 +582,14 @@ document.addEventListener('click', function(){
   const cur = document.querySelector('.book-page.current');
   if (cur) activateVideos(cur);
 });
+
+// 加载页：2秒后淡出
+setTimeout(()=>{
+  const ls=document.getElementById('loading-screen');
+  if(!ls)return;
+  ls.classList.add('fade-out');
+  setTimeout(()=>ls.remove(),650);
+},2000);
 </script>
 </body>
 </html>
